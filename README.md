@@ -6,4 +6,4 @@ Algorithms Implemented
 3) K-Nearest Neighbour (Implemented in python)
 4) KMeans
 
-The dataset used is county statistics which result in a certain voting result i.e. Democratic or Republican.
+The above algorithms are used to predict and classify the a number of counties based on a election training data set.
