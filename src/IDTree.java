@@ -1,101 +1,22 @@
-
 import java.util.*;
 import java.io.*;
-
-class  DataSet{
-    public int democrat;
-    public Double population;
-    public Double population_change;    //increase, decrease
-    public Double age65plus;    //low medium high
-    public Double black;    //low medium high
-    public Double hispanic; //low medium high
-    public Double ed_bachelors; //low medium high
-    public Double income;   //low medium high
-    public Double poverty;  //low medium high
-    public Double density;  //low medium high
-
-    public String population_class;
-    public String population_change_class;
-    public String age65plus_class;
-    public String black_class;
-    public String hispanic_class;
-    public String ed_bachelors_class;
-    public String income_class;
-    public String poverty_class;
-    public String density_class;
-}
-
-class Attribute{
-    public String name;
-    public HashMap<String, Double[]> attributes;
-    Double infoD;
-    public Double gain;
-    int total;
-
-    Attribute(String name){
-        attributes = new HashMap<String, Double[]>();
-        this.name = name;
-        total=0;
-        infoD=0.0;
-        gain=0.0;
-    }
-
-    public void setValues(String class_name, int yes){
-        Double[] table = {0.0,0.0,0.0,0.0};
-
-        if(this.attributes.get(class_name)==null){
-            this.attributes.put(class_name, table);
-        }
-
-        if(yes==1){
-            this.attributes.get(class_name)[0]+=1;
-        }else{
-            this.attributes.get(class_name)[1]+=1;
-        }
-        total+=1;
-    }
-
-    public void calculateEntrophy(Double infoD, Integer total){
-        Double intAge = 0.0;
-
-        Iterator it = attributes.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Double[]> pair = (Map.Entry)it.next();
-            Double temp[] = pair.getValue();
-            Double comp = (temp[0]+temp[1])/total*calc(temp[0],temp[1]);
-            intAge+=comp;
-        }
-
-        this.gain=infoD-intAge;
-    }
-
-    private Double calc(Double p, Double n){
-        Double ratio = -Double.valueOf(p)/(p+n);
-        ratio *= Math.log10(-ratio) / Math.log10(2.0);
-        ratio -= (Double.valueOf(n)/(p+n))*Math.log10(Double.valueOf(n)/(p+n)) / Math.log10(2.0);
-        return ratio;
-
-    }
-}
-
-class Node{
-    Double p;
-    Double n;
-    String Name;
-    ArrayList<Node> node = new ArrayList<Node>();
-}
-
+/*
+* Class to implement the ID decision tree to classify the election dataset.
+* */
 public class IDTree {
-    public ArrayList<Record> training = new ArrayList<Record>();
-    public ArrayList<Record> test = new ArrayList<Record>();
+    public ArrayList<Record> training = new ArrayList<>();  //List containing the training data
+    public ArrayList<Record> test = new ArrayList<>();  //List containing the test data
 
-    ArrayList<DataSet> trainingN = new ArrayList<DataSet>();
-    ArrayList<DataSet> testN = new ArrayList<DataSet>();
-    public Record greatest = null;
-    public Record smallest = null;
-    int totalyes = 0;
-    Node root = null;
+    ArrayList<DataSet> trainingN = new ArrayList<>();   //List containing the training data classes
+    ArrayList<DataSet> testN = new ArrayList<>();   //List containing the test data classes
+    public Record greatest = null;  //Record made up of all the largest attribute values
+    public Record smallest = null;  //Record made up of all the smallest attribute values
+    int totalyes = 0;   //Count of the records with a Democrat result
+    Node root = null;   //The root node of the decision tree
 
+    /*
+        Default constructor
+     */
     public IDTree(){
         String[] initMin = {"0","86","-17.0","4.1","0.0","0.002","3.2","19986","0.9","0.1"};
         String[] initMax = {"0","10116705","72.9","52.9","0.851","0.958","74.4","122238","53.2","69467.5"};
@@ -104,9 +25,16 @@ public class IDTree {
         root = new Node();
     }
 
+    /*
+    Method to load the training data.
+    INPUT
+     ** filename -  the name of the csv file containing the training data.
+    RETURNS
+     ** NONE
+    */
     public void loadTrainingDataSet(String filename){
-        BufferedReader bf= null;
-        String line = "";
+        BufferedReader bf;
+        String line;
 
         try {
             bf = new BufferedReader(new FileReader(filename));
@@ -123,9 +51,16 @@ public class IDTree {
         }
     }
 
+    /*
+    Method to load the test data.
+    INPUT
+     ** filename -  the name of the csv file containing the test data.
+    RETURNS
+     ** NONE
+    */
     public void loadTestDataSet(String filename){
-        BufferedReader bf= null;
-        String line = "";
+        BufferedReader bf;
+        String line;
 
         try {
             bf = new BufferedReader(new FileReader(filename));
@@ -139,6 +74,14 @@ public class IDTree {
         }
     }
 
+    /*
+    Method to normalize the data to reduce shift from outliers.
+    INPUT
+     ** setType -  Specifies whether the set being normalized is the training data (train) or the test data
+     ** data - List containing the data to be normalized.
+    RETURNS
+     ** NONE
+    */
     public void normalize(String setType, ArrayList<Record> data){
         for(Record row : data){
             DataSet ds = new DataSet();
@@ -161,6 +104,9 @@ public class IDTree {
         }
     }
 
+    /*
+    * Main method.
+     */
     public static void main(String[] args){
         IDTree decisionTree = new IDTree();
         decisionTree.loadTrainingDataSet("votes-train.csv");
@@ -179,6 +125,13 @@ public class IDTree {
 
     }
 
+    /*
+    Method to predict the results of the test data and compute its accuracy.
+    INPUT
+     ** NONE.
+    RETURNS
+     ** NONE
+    */
     public void predict(){
         Node temp = root;
         int output = 0;
